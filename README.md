@@ -109,8 +109,8 @@ node server.js
 **3. Installation du Frontend**
 *******************************
 cd ..
-npx create-react-app frontend
-cd frontend
+npx create-react-app frontend11
+cd frontend11
 npm install axios
 *******************************
 **Modifiez src/App.js :**
