@@ -1,20 +1,26 @@
-# Image de base
+# Utilisation de l'image de base Node.js
 FROM node:18
 
-# Création du dossier de travail
+# Mise à jour des paquets système et installation de bibliothèques nécessaires
+RUN apt-get update && apt-get install -y \
+    libc6-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création du répertoire de travail
 WORKDIR /app
 
-# Copie des fichiers de package
+# Copie des fichiers de package (package.json et package-lock.json)
 COPY backend/package*.json ./
 
 # Installation des dépendances
-RUN npm install
+RUN npm install --legacy-peer-deps
 
-# Copie du reste du code backend
+# Copie du reste des fichiers du backend
 COPY backend/ .
 
-# Port exposé
+# Exposition du port sur lequel l'application écoute
 EXPOSE 3001
 
-# Commande de lancement
+# Commande de lancement du serveur backend
 CMD ["node", "server.js"]
