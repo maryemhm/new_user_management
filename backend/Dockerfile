@@ -42,4 +42,4 @@ USER node
 EXPOSE 3001
 
 # Commande par défaut pour démarrer l'application
-CMD ["node", "server.js"]
+CMD ["node", "server.js"]  

@@ -6,7 +6,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./backend/data:/data
+      - ./backend/users.db:/app/users.db
     environment:
       - NODE_ENV=production
       - DB_PATH=/data/users.db

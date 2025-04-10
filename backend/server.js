@@ -3,7 +3,6 @@ const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 const port = 3001;
