@@ -1,0 +1,30 @@
+name: CI/CD Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Vérifier le code source
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Étape 2 : Configurer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Utilisez une version LTS compatible avec votre projet
+
+      # Étape 3 : Installer les dépendances
+      - name: Install dependencies
+        run: npm install
+
+      # Étape 4 : Exécuter les tests
+      - name: Run tests
+        run: npm test

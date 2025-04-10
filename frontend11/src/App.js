@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -8,17 +7,23 @@ function App() {
   const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3001/api/users');
-      setUsers(response.data);
+      const response = await axios.get('/api/users');
+      // Garantit que users est toujours un tableau
+      setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
+      setUsers([]); // Réinitialise à un tableau vide en cas d'erreur
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,12 +34,16 @@ function App() {
     }
 
     try {
-      const response = await axios.post('http://localhost:3001/api/users', { name, email, age: parseInt(age, 10) });
-      setUsers([...users, response.data]);
+      const response = await axios.post('http://localhost:3001/api/users', { 
+        name, 
+        email, 
+        age: parseInt(age, 10) 
+      });
+      setUsers(prevUsers => [...prevUsers, response.data]);
       resetForm();
     } catch (error) {
       console.error('Erreur lors de l\'ajout de l\'utilisateur:', error);
-      alert('Échec de l\'ajout de l\'utilisateur. Veuillez réessayer.');
+      alert(`Échec de l'ajout: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -45,22 +54,26 @@ function App() {
     }
 
     try {
-      await axios.put(`http://localhost:3001/api/users/${editingUser.id}`, { name, email, age: parseInt(age, 10) });
+      await axios.put(`http://localhost:3001/api/users/${editingUser.id}`, { 
+        name, 
+        email, 
+        age: parseInt(age, 10) 
+      });
       fetchUsers();
       resetForm();
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
-      alert('Échec de la modification. Veuillez réessayer.');
+      console.error('Erreur lors de la mise à jour:', error);
+      alert(`Échec de la modification: ${error.response?.data?.error || error.message}`);
     }
   };
 
   const deleteUser = async (id) => {
     try {
       await axios.delete(`http://localhost:3001/api/users/${id}`);
-      setUsers(users.filter(user => user.id !== id));
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
     } catch (error) {
-      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-      alert('Échec de la suppression. Veuillez réessayer.');
+      console.error('Erreur lors de la suppression:', error);
+      alert(`Échec de la suppression: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -75,26 +88,64 @@ function App() {
     <div className="container">
       <h1>Gestion des Utilisateurs</h1>
       <div className="form-group">
-        <input placeholder="Nom" value={name} onChange={e => setName(e.target.value)} />
-        <input placeholder="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input placeholder="Âge" type="number" value={age} onChange={e => setAge(e.target.value)} />
+        <input 
+          placeholder="Nom" 
+          value={name} 
+          onChange={e => setName(e.target.value)} 
+        />
+        <input 
+          placeholder="Email" 
+          type="email" 
+          value={email} 
+          onChange={e => setEmail(e.target.value)} 
+        />
+        <input 
+          placeholder="Âge" 
+          type="number" 
+          value={age} 
+          onChange={e => setAge(e.target.value)} 
+        />
         {editingUser ? (
           <button onClick={updateUser} className="btn btn-success">Modifier</button>
         ) : (
           <button onClick={addUser} className="btn btn-primary">Ajouter</button>
         )}
       </div>
-      <ul className="user-list">
-        {users.map(user => (
-          <li key={user.id} className="user-item">
-            <span>{user.name} ({user.email}, {user.age} ans)</span>
-            <div>
-              <button onClick={() => { setEditingUser(user); setName(user.name); setEmail(user.email); setAge(user.age.toString()); }} className="btn btn-warning">Modifier</button>
-              <button onClick={() => deleteUser(user.id)} className="btn btn-danger">Supprimer</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+
+      {loading ? (
+        <p>Chargement en cours...</p>
+      ) : (
+        <ul className="user-list">
+          {users.length === 0 ? (
+            <p>Aucun utilisateur trouvé</p>
+          ) : (
+            users.map(user => (
+              <li key={user.id} className="user-item">
+                <span>{user.name} ({user.email}, {user.age} ans)</span>
+                <div>
+                  <button 
+                    onClick={() => { 
+                      setEditingUser(user); 
+                      setName(user.name); 
+                      setEmail(user.email); 
+                      setAge(user.age.toString()); 
+                    }} 
+                    className="btn btn-warning"
+                  >
+                    Modifier
+                  </button>
+                  <button 
+                    onClick={() => deleteUser(user.id)} 
+                    className="btn btn-danger"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 }
@@ -131,10 +182,15 @@ const styles = `
   cursor: pointer;
   margin: 5px;
   color: white;
+  border-radius: 4px;
+  transition: opacity 0.3s;
+}
+.btn:hover {
+  opacity: 0.9;
 }
 .btn-primary { background-color: #007bff; }
 .btn-success { background-color: #28a745; }
-.btn-warning { background-color: #ffc107; }
+.btn-warning { background-color: #ffc107; color: #000; }
 .btn-danger { background-color: #dc3545; }
 `;
 

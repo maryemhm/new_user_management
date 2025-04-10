@@ -1,42 +1,19 @@
-version: '3'
+version: '3.3'
 
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend11/Dockerfile
-    ports:
-      - "3000:3000"
-    networks:
-      - app-network
-    depends_on:
-      - backend
-    environment:
-      - NODE_ENV=development
-
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     ports:
       - "3001:3001"
-    networks:
-      - app-network
-    environment:
-      - NODE_ENV=development
     volumes:
-      - ./backend:/app
+      - ./backend/data:/data
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/data/users.db
 
-  # Optionnel : service de base de données (ajuster selon votre besoin)
-  # db:
-  #   image: mysql:5.7
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: example
-  #   networks:
-  #     - app-network
-  #   ports:
-  #     - "3306:3306"
-
-networks:
-  app-network:
-    driver: bridge
+  frontend:
+    build: ./frontend11
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

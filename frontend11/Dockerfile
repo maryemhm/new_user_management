@@ -1,26 +1,14 @@
-# Utilisation de l'image de base Node.js
-FROM node:18
+# frontend11/Dockerfile
+FROM node:16-alpine as builder
 
-# Mise à jour des paquets système et installation de bibliothèques nécessaires
-RUN apt-get update && apt-get install -y \
-    libc6-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Création du répertoire de travail
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-# Copie des fichiers de package (package.json et package-lock.json)
-COPY frontend11/package*.json ./
-
-# Installation des dépendances avec l'option legacy-peer-deps pour éviter les conflits de dépendances
-RUN npm install --legacy-peer-deps
-
-# Copie du reste du frontend
-COPY frontend11/ .
-
-# Exposition du port sur lequel l'application React écoute
-EXPOSE 3000
-
-# Commande pour démarrer l'application React en mode développement
-CMD ["npm", "start"]
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
