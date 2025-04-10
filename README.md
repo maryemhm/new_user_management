@@ -1,5 +1,5 @@
 ***Projet de Gestion des Utilisateurs***
-
+![CI/CD](https://github.com/<maryemhm>/<new_user_management>/actions/workflows/ci.yml/badge.svg)
 **Description**
 
 **Un système simple de gestion des utilisateurs développé avec :**
